@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ParkSense — Find parking in seconds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--green:#1a7a3c;--green-light:#eaf5ee;--green-mid:#5dcaa5;--dark:#0a1209;--gray:#f7f5f0;--border:#e8e4dc;--text:#111;--muted:#666;--red:#cc3333;--mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--text);background:#fff;line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--gray)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 40px;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:500;color:var(--text);text-decoration:none}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:var(--green);display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:16px;height:16px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:14px;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-ctas{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;transition:all .18s;border:1px solid transparent;font-family:var(--sans)}
+.btn-primary{background:var(--green);color:#fff;border-color:var(--green)}.btn-primary:hover{background:#145e2e}
+.btn-outline{background:transparent;color:var(--green);border-color:var(--green)}.btn-outline:hover{background:var(--green-light)}
+.btn-white{background:#fff;color:var(--text);border-color:var(--border)}.btn-white:hover{background:var(--gray)}
+.hero{padding:100px 40px 80px;background:var(--gray);text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(26,122,60,0.08),transparent);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:100px;padding:5px 14px 5px 10px;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:24px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#22dd55;flex-shrink:0;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.hero h1{font-size:clamp(36px,5vw,62px);font-weight:300;line-height:1.1;color:var(--dark);max-width:700px;margin:0 auto 20px;letter-spacing:-0.02em}
+.hero h1 strong{font-weight:500;color:var(--green)}
+.hero p{font-size:17px;color:var(--muted);max-width:440px;margin:0 auto 36px;font-weight:300}
+.hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:64px}
+.hero-ctas .btn{padding:12px 24px;font-size:15px}
+.stats-bar{display:flex;justify-content:center;border:1px solid var(--border);border-radius:16px;background:#fff;overflow:hidden;max-width:560px;margin:0 auto}
+.stat-item{flex:1;padding:20px 24px;text-align:center;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:26px;font-weight:500;color:var(--green);font-family:var(--mono)}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:3px}
+.live-strip{background:var(--dark);padding:16px 40px;display:flex;align-items:center;gap:16px;overflow-x:auto}
+.strip-label{font-size:11px;color:#5dcaa5;white-space:nowrap;display:flex;align-items:center;gap:7px;flex-shrink:0;font-family:var(--mono)}
+.spots-row{display:flex;gap:8px;align-items:center}
+.spot{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;cursor:pointer}
+.spot-box{width:36px;height:46px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;font-family:var(--mono);border:1.5px solid transparent;transition:transform .15s}
+.spot-box:hover{transform:scale(1.08)}
+.spot-box.free{background:#d4f5df;border-color:var(--green);color:var(--green)}
+.spot-box.taken{background:#fde8e8;border-color:var(--red);color:var(--red)}
+.spot-lbl{font-size:8px;color:#4a8;font-family:var(--mono)}
+.strip-summary{margin-left:auto;font-size:11px;color:#4a8;font-family:var(--mono);flex-shrink:0}
+section{padding:80px 40px}
+.section-tag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:500;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;font-family:var(--mono)}
+.section-tag::before{content:'';width:20px;height:1px;background:var(--green)}
+section h2{font-size:clamp(26px,3vw,38px);font-weight:400;letter-spacing:-0.02em;margin-bottom:12px}
+section .sub{font-size:15px;color:var(--muted);max-width:460px;font-weight:300}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;margin-top:48px;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.how-card{background:#fff;padding:28px;border-right:1px solid var(--border)}
+.how-card:last-child{border-right:none}
+.how-num{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:20px}
+.how-icon{width:40px;height:40px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.how-card h3{font-size:15px;font-weight:500;margin-bottom:8px}
+.how-card p{font-size:13px;color:var(--muted);line-height:1.6}
+.feat-section{background:var(--gray)}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:48px}
+.feat-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .2s}
+.feat-card:hover{border-color:#aaa}
+.feat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.feat-card h3{font-size:15px;font-weight:500;margin-bottom:7px}
+.feat-card p{font-size:13px;color:var(--muted);line-height:1.6}
+.pricing-section{background:var(--dark);color:#fff}
+.pricing-section .section-tag{color:#5dcaa5}
+.pricing-section .section-tag::before{background:#5dcaa5}
+.pricing-section h2{color:#fff}
+.pricing-section .sub{color:#888}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:48px}
+.plan{background:#111a12;border:1px solid #1e2e1e;border-radius:20px;padding:28px;display:flex;flex-direction:column}
+.plan.featured{border-color:var(--green);background:#0f1a10}
+.plan-badge{display:inline-block;background:var(--green);color:#fff;font-size:10px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:14px;font-family:var(--mono)}
+.plan-badge.blue{background:#1a4a8a}
+.plan-name{font-size:15px;font-weight:500;color:#eee;margin-bottom:4px}
+.plan-price{font-size:38px;font-weight:300;color:#fff;font-family:var(--mono);margin:14px 0 2px;letter-spacing:-0.02em}
+.plan-price span{font-size:14px;font-weight:300;color:#555}
+.plan-period{font-size:12px;color:#444;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1e2e1e;font-family:var(--mono)}
+.plan ul{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;flex:1}
+.plan ul li{font-size:13px;color:#aaa;display:flex;align-items:start;gap:8px}
+.plan ul li::before{content:'→';color:var(--green);font-family:var(--mono);flex-shrink:0}
+.plan-btn{width:100%;padding:12px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #333;background:transparent;color:#aaa;font-family:var(--sans);transition:all .2s}
+.plan.featured .plan-btn{background:var(--green);color:#fff;border-color:var(--green)}
+.plan-btn:hover{border-color:#888;color:#fff}
+.plan.featured .plan-btn:hover{background:#145e2e}
+.hw-note{text-align:center;margin-top:20px;font-size:12px;color:#444;font-family:var(--mono)}
+.save-tag{display:inline-block;background:rgba(34,221,85,.15);color:#22dd55;font-size:10px;padding:2px 8px;border-radius:20px;font-family:var(--mono);vertical-align:middle;margin-left:6px}
+.cta-band{background:var(--green);padding:80px 40px;text-align:center}
+.cta-band h2{font-size:clamp(26px,3vw,42px);font-weight:300;color:#fff;margin-bottom:16px;letter-spacing:-0.02em}
+.cta-band p{font-size:16px;color:rgba(255,255,255,.7);margin-bottom:32px;font-weight:300}
+.cta-band .btn{padding:14px 28px;font-size:15px}
+footer{background:var(--dark);padding:40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;border-top:1px solid #1a2a1a}
+.footer-logo{display:flex;align-items:center;gap:10px;color:#eee;font-size:15px;font-weight:500;text-decoration:none}
+.footer-links{display:flex;gap:20px}
+.footer-links a{color:#4a8;font-size:12px;text-decoration:none;font-family:var(--mono)}
+.footer-links a:hover{color:#5dcaa5}
+.footer-copy{font-size:12px;color:#3a5a3a;font-family:var(--mono)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .6s ease both}
+.delay-1{animation-delay:.1s}.delay-2{animation-delay:.2s}.delay-3{animation-delay:.3s}
+@media(max-width:768px){
+  nav{padding:12px 20px}.nav-links{display:none}
+  section{padding:60px 20px}.hero{padding:70px 20px 60px}
+  .stats-bar{flex-direction:column;border-radius:12px}
+  .stat-item{border-right:none;border-bottom:1px solid var(--border)}
+  .stat-item:last-child{border-bottom:none}
+  .how-grid{grid-template-columns:1fr}
+  .how-card{border-right:none;border-bottom:1px solid var(--border)}
+  .how-card:last-child{border-bottom:none}
+  .live-strip{padding:14px 20px}
+  footer{padding:28px 20px;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M3 13L3 3L13 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    ParkSense
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-ctas">
+    <a href="#" class="btn btn-white">Log in</a>
+    <a href="#pricing" class="btn btn-primary">Get started</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge fade-up"><span class="live-dot"></span>Real-time</div>
+  <h1 class="fade-up delay-1">Find parking in <strong>seconds</strong>,<br/>not minutes</h1>
+  <p class="fade-up delay-2">Smart sensors in every spot. Live availability on your phone. No more circling. No more guessing.</p>
+  <div class="hero-ctas fade-up delay-3">
+    <a href="#pricing" class="btn btn-primary">Get started →</a>
+    <a href="#how" class="btn btn-outline">See how it works</a>
+  </div>
+  <div class="stats-bar fade-up delay-3">
+    <div class="stat-item"><div class="stat-num">2s</div><div class="stat-lbl">Average spot found</div></div>
+    <div class="stat-item"><div class="stat-num">99.8%</div><div class="stat-lbl">Sensor accuracy</div></div>
+    <div class="stat-item"><div class="stat-num">3yr+</div><div class="stat-lbl">Battery life</div></div>
+  </div>
+</div>
+
+<div class="live-strip">
+  <div class="strip-label"><span class="live-dot"></span>live · city stars mall · floor B2</div>
+  <div class="spots-row" id="spots-row"></div>
+  <div class="strip-summary" id="strip-summary"></div>
+</div>
+
+<section id="how">
+  <div class="section-tag">How it works</div>
+  <h2>From sensor to screen<br/>in under a second</h2>
+  <p class="sub">Three steps. Zero hassle. Every time.</p>
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-num">01</div>
+      <div class="how-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#1a7a3c" stroke-width="1.5"/><path d="M10 7v3l2 2" stroke="#1a7a3c" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h3>Sensor detects</h3>
+      <p>An ultrasonic sensor in each spot detects vehicles in real time — no cameras, no moving parts, just a clean instant signal.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">02</div>
+      <div class="how-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 14l3-3 3 3 6-8" stroke="#1a7a3c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>LoRa transmits</h3>
+      <p>Status is sent instantly over LoRa — long range and ultra-low power. Works underground and in dense concrete structures.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">03</div>
+      <div class="how-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="#1a7a3c" stroke-width="1.5"/><path d="M7 7h6M7 10h4" stroke="#1a7a3c" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h3>You see it live</h3>
+      <p>Open the app, see a live floor map with exact free and taken spots per level. Know before you arrive.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">04</div>
+      <div class="how-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3L3 7v6l7 4 7-4V7L10 3z" stroke="#1a7a3c" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+      <h3>Operators gain insight</h3>
+      <p>Live dashboard with occupancy trends, peak hours, and sensor health — all in one portal for facility managers.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="feat-section">
+  <div class="section-tag">Features</div>
+  <h2>Built for real<br/>parking environments</h2>
+  <p class="sub">Designed for underground car parks, open lots, hospitals, and malls.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#eaf5ee"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="#1a7a3c" stroke-width="1.5"/><path d="M10 6v4l3 3" stroke="#1a7a3c" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h3>Real-time updates</h3>
+      <p>Status changes reach your phone in under 1 second. Event-driven — only transmits on change, not on a polling cycle.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#e6f1fb"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10c0-3.9 3.1-7 7-7s7 3.1 7 7M6 13c0-2.2 1.8-4 4-4s4 1.8 4 4M9 16h2" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+      <h3>LoRa long range</h3>
+      <p>One LoRaWAN gateway covers an entire mall or terminal — underground included. No per-spot wiring ever.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#faeeda"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="14" height="8" rx="2" stroke="#854F0B" stroke-width="1.5"/><path d="M7 10V7a3 3 0 016 0v3" stroke="#854F0B" stroke-width="1.5"/></svg></div>
+      <h3>3+ year battery life</h3>
+      <p>Designed for minimal maintenance. Event-driven LoRa keeps power consumption near zero at rest.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#eaf5ee"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 3L3 7v6l7 4 7-4V7L10 3z" stroke="#1a7a3c" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+      <h3>Modular hardware</h3>
+      <p>Fixed station with a swappable sensor unit. Replace in seconds — no tools, no rewiring, zero downtime.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#eeedfe"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="6" height="6" rx="1.5" stroke="#534AB7" stroke-width="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5" stroke="#534AB7" stroke-width="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5" stroke="#534AB7" stroke-width="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5" stroke="#534AB7" stroke-width="1.5"/></svg></div>
+      <h3>Operator dashboard</h3>
+      <p>Full analytics — occupancy by hour, peak trends, and live sensor health for management teams.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#e1f5ee"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16A8 8 0 0010 2z" stroke="#0F6E56" stroke-width="1.5"/><path d="M2 10h16" stroke="#0F6E56" stroke-width="1" opacity=".5"/></svg></div>
+      <h3>IP67 weatherproof</h3>
+      <p>Sealed against rain, cleaning jets, and vehicle fluids. Rated for both outdoor and underground use.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="pricing-section">
+  <div class="section-tag">Pricing</div>
+  <h2>Simple, transparent pricing</h2>
+  <p class="sub">Pay only for what you need. No hidden fees. No contracts.</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Single visit</div>
+      <div class="plan-price">20<span> EGP</span></div>
+      <div class="plan-period">one-time · per parking session</div>
+      <ul>
+        <li>Live spot map access</li>
+        <li>Find a free spot instantly</li>
+        <li>Valid for one session</li>
+        <li>Works at all ParkSense facilities</li>
+      </ul>
+      <button class="plan-btn">Pay &amp; park</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">Most popular</div>
+      <div class="plan-name">Monthly</div>
+      <div class="plan-price">100<span> EGP</span></div>
+      <div class="plan-period">per month · unlimited visits</div>
+      <ul>
+        <li>Everything in Single visit</li>
+        <li>Unlimited parking sessions</li>
+        <li>Parking history log</li>
+        <li>Priority spot alerts</li>
+        <li>Works at all facilities</li>
+      </ul>
+      <button class="plan-btn">Get monthly</button>
+    </div>
+    <div class="plan">
+      <div class="plan-badge blue">Annual <span class="save-tag">save 200 EGP</span></div>
+      <div class="plan-name">Yearly</div>
+      <div class="plan-price">1000<span> EGP</span></div>
+      <div class="plan-period">per year · instead of 1,200 EGP</div>
+      <ul>
+        <li>Everything in Monthly</li>
+        <li>2 months free</li>
+        <li>Early access to new features</li>
+        <li>Priority customer support</li>
+        <li>Facility operator insights</li>
+      </ul>
+      <button class="plan-btn">Get annual</button>
+    </div>
+  </div>
+  <p class="hw-note"> </p>
+</section>
+
+<div class="cta-band" id="contact">
+  <h2>Ready to transform<br/>your parking facility?</h2>
+  <p>Join the waitlist and get your first month free.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+    <a href="#" class="btn btn-white">Get started free →</a>
+    <a href="mailto:hello@parksense.io" class="btn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">Contact us</a>
+  </div>
+</div>
+
+<footer>
+  <a class="footer-logo" href="#">
+    <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M3 13L3 3L13 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    ParkSense
+  </a>
+  <div class="footer-links">
+    <a href="#">Privacy</a><a href="#">Terms</a><a href="#">API docs</a><a href="#contact">Contact</a>
+  </div>
+  <div class="footer-copy">Built in Cairo, Egypt</div>
+</footer>
+
+<script>
+const spotData=[
+  {id:'1A',free:true},{id:'2A',free:false},{id:'3A',free:true},
+  {id:'4A',free:false},{id:'5A',free:true},{id:'6A',free:true},
+  {id:'1B',free:false},{id:'2B',free:true},{id:'3B',free:true},
+  {id:'4B',free:true},{id:'5B',free:false},{id:'6B',free:true},
+  {id:'1C',free:false},{id:'2C',free:true},{id:'3C',free:false},
+];
+function renderStrip(){
+  const row=document.getElementById('spots-row');
+  const summary=document.getElementById('strip-summary');
+  row.innerHTML=spotData.map(s=>`<div class="spot" onclick="toggleSpot('${s.id}')"><div class="spot-box ${s.free?'free':'taken'}">${s.id}</div><div class="spot-lbl">${s.free?'free':'taken'}</div></div>`).join('');
+  const free=spotData.filter(s=>s.free).length;
+  summary.textContent=`${free} free · ${spotData.length-free} taken`;
+}
+function toggleSpot(id){const s=spotData.find(x=>x.id===id);if(s){s.free=!s.free;renderStrip();}}
+renderStrip();
+setInterval(()=>{const i=Math.floor(Math.random()*spotData.length);spotData[i].free=!spotData[i].free;renderStrip();},3000);
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='none';}});},{threshold:0.1});
+document.querySelectorAll('.how-card,.feat-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity .5s ease, transform .5s ease';obs.observe(el);});
+</script>
+</body>
+</html>
